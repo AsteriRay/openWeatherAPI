@@ -13,7 +13,6 @@ app.use(express.static('public'));
 app.set('view engine', 'ejs');
 
 const apiKey = `${process.env.API_KEY}`;
-console.log(apiKey);
 
 app.get('/', (req, res) => {
   res.render('index', { weather: null, error: null });
@@ -24,10 +23,9 @@ app.post('/', (req, res) => {
 
   let url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`;
 
-  https.get(url, (response) => {
+  const request = https.get(url, (response) => {
     response.on('data', (data) => {
       let weather = JSON.parse(data);
-      // you shall output it in the console just to make sure that the data being displayed is what you want
 
       if (weather.main == undefined) {
         res.render('index', {
@@ -35,9 +33,7 @@ app.post('/', (req, res) => {
           error: 'Error, please try again',
         });
       } else {
-        // we shall use the data got to set up your output
         let place = `${weather.name}, ${weather.sys.country}`,
-          /* you shall calculate the current timezone using the data fetched*/
           weatherTimezone = `${new Date(
             weather.dt * 1000 - weather.timezone * 1000
           )}`;
@@ -70,6 +66,9 @@ app.post('/', (req, res) => {
         });
       }
     });
+  });
+  request.on('error', (error) => {
+    res.render('index', { weather: null, error: 'Please try again' });
   });
 });
 
